@@ -7,9 +7,9 @@ this_dir = pathlib.Path(__file__).resolve().parent
 
 def test_get_edges():
     mesh = meshplex.read(this_dir / "meshes" / "pacman.vtk")
-    mesh.create_edges()
-    edge_mask = mesh.get_edge_mask()
-    edge_points = mesh.edges["points"][edge_mask]
+    mesh.create_facets()
+    facet_mask = mesh.get_facet_mask()
+    edge_points = mesh.facets["points"][facet_mask]
     assert len(edge_points) == 1276
 
 

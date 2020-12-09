@@ -12,9 +12,6 @@ class MeshTetra(_SimplexMesh):
     def __init__(self, points, cells, sort_cells=False):
         super().__init__(points, cells, sort_cells=sort_cells)
 
-        self._half_edge_coords = None
-        self._ei_dot_ei = None
-        self._ei_dot_ej = None
         self._control_volumes = None
         self._circumcenters = None
         self.subdomains = {}
@@ -22,70 +19,22 @@ class MeshTetra(_SimplexMesh):
         self.ce_ratios = self._compute_ce_ratios_geometric()
         # self.ce_ratios = self._compute_ce_ratios_algebraic()
 
-        self.is_boundary_point = None
-        self._inv_faces = None
         self.edges = None
-        self.is_boundary_facet = None
-        self.is_boundary_facet_local = None
-        self.faces = None
 
         self._cell_centroids = None
 
     def __repr__(self):
         num_points = len(self.points)
         num_cells = len(self.cells["points"])
-        string = f"<meshplex tetra mesh, {num_points} cells, {num_cells} points>"
+        string = f"<meshplex tetra mesh, {num_cells} cells, {num_points} points>"
         return string
-
-    def mark_boundary(self):
-        if "faces" not in self.cells:
-            self.create_cell_face_relationships()
-
-        self.is_boundary_point = numpy.zeros(len(self.points), dtype=bool)
-        self.is_boundary_point[self.faces["points"][self.is_boundary_facet]] = True
-
-    def create_cell_face_relationships(self):
-        # Reshape into individual faces, and take the first point per edge. (The face is
-        # fully characterized by it.) Sort the columns to make it possible for
-        # `unique()` to identify individual faces.
-        s = self.idx_hierarchy.shape
-        a = self.idx_hierarchy.reshape([s[0], s[1], s[2] * s[3]]).T
-        a = numpy.sort(a[:, :, 0])
-
-        # Find the unique faces
-        b = numpy.ascontiguousarray(a).view(
-            numpy.dtype((numpy.void, a.dtype.itemsize * a.shape[1]))
-        )
-        _, idx, inv, cts = numpy.unique(
-            b, return_index=True, return_inverse=True, return_counts=True
-        )
-
-        # No face has more than 2 cells. This assertion fails, for example, if cells are
-        # listed twice.
-        assert all(cts < 3)
-
-        self.is_boundary_facet_local = (cts[inv] == 1).reshape(s[2:])
-        self.is_boundary_facet = cts == 1
-
-        self.faces = {"points": a[idx]}
-
-        # cell->faces relationship
-        num_cells = len(self.cells["points"])
-        cells_faces = inv.reshape([4, num_cells]).T
-        self.cells["faces"] = cells_faces
-
-        # Store the opposing points too
-        self.cells["opposing vertex"] = self.cells["points"]
-
-        # save for create_edge_cells
-        self._inv_faces = inv
 
     def create_face_edge_relationships(self):
         a = numpy.vstack(
             [
-                self.faces["points"][:, [1, 2]],
-                self.faces["points"][:, [2, 0]],
-                self.faces["points"][:, [0, 1]],
+                self.facets["points"][:, [1, 2]],
+                self.facets["points"][:, [2, 0]],
+                self.facets["points"][:, [0, 1]],
             ]
         )
 
@@ -99,9 +48,9 @@ class MeshTetra(_SimplexMesh):
         self.edges = {"points": edge_points}
 
         # face->edge relationship
-        num_faces = len(self.faces["points"])
+        num_faces = len(self.facets["points"])
         face_edges = inv.reshape([3, num_faces]).T
-        self.faces["edges"] = face_edges
+        self.facets["edges"] = face_edges
 
     def _compute_cell_circumcenters(self):
         """Computes the center of the circumsphere of each cell."""
@@ -445,11 +394,11 @@ class MeshTetra(_SimplexMesh):
             self._compute_ce_ratios_geometric()
             # self._compute_ce_ratios_algebraic()
 
-        if "faces" not in self.cells:
-            self.create_cell_face_relationships()
+        if "facets" not in self.cells:
+            self.create_facets()
 
         sums = numpy.bincount(
-            self.cells["faces"].T.reshape(-1),
+            self.cells["facets"].T.reshape(-1),
             self.circumcenter_face_distances.reshape(-1),
         )
 
@@ -514,9 +463,9 @@ class MeshTetra(_SimplexMesh):
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
 
-        if "faces" not in self.cells:
-            self.create_cell_face_relationships()
-        if "edges" not in self.faces:
+        if "facets" not in self.cells:
+            self.create_facets()
+        if "edges" not in self.facets:
             self.create_face_edge_relationships()
 
         fig = plt.figure()
@@ -525,12 +474,12 @@ class MeshTetra(_SimplexMesh):
         # plt.axis("equal")
 
         # find all faces with this edge
-        adj_face_ids = numpy.where((self.faces["edges"] == edge_id).any(axis=1))[0]
+        adj_face_ids = numpy.where((self.facets["edges"] == edge_id).any(axis=1))[0]
         # find all cells with the faces
         # https://stackoverflow.com/a/38481969/353337
         adj_cell_ids = numpy.where(
-            numpy.in1d(self.cells["faces"], adj_face_ids)
-            .reshape(self.cells["faces"].shape)
+            numpy.in1d(self.cells["facets"], adj_face_ids)
+            .reshape(self.cells["facets"].shape)
             .any(axis=1)
         )[0]
 
@@ -539,8 +488,8 @@ class MeshTetra(_SimplexMesh):
             [
                 adj_edge_id
                 for adj_cell_id in adj_cell_ids
-                for face_id in self.cells["faces"][adj_cell_id]
-                for adj_edge_id in self.faces["edges"][face_id]
+                for face_id in self.cells["facets"][adj_cell_id]
+                for adj_edge_id in self.facets["edges"][face_id]
             ]
         )
         col = "k"

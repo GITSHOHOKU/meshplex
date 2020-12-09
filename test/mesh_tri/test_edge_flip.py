@@ -31,9 +31,9 @@ def test_flip_simple():
     mesh.create_edges()
     assert mesh.num_delaunay_violations() == 1
     assert numpy.array_equal(
-        mesh.edges["points"], [[0, 1], [0, 3], [1, 2], [1, 3], [2, 3]]
+        mesh.facets["points"], [[0, 1], [0, 3], [1, 2], [1, 3], [2, 3]]
     )
-    assert numpy.array_equal(mesh.cells["edges"], [[3, 1, 0], [4, 3, 2]])
+    assert numpy.array_equal(mesh.cells["facets"], [[3, 1, 0], [4, 3, 2]])
     assert_mesh_consistency(mesh)
 
     # mesh.show()
@@ -41,10 +41,10 @@ def test_flip_simple():
     assert_mesh_consistency(mesh)
     assert mesh.num_delaunay_violations() == 0
     assert numpy.array_equal(
-        mesh.edges["points"], [[0, 1], [0, 3], [1, 2], [0, 2], [2, 3]]
+        mesh.facets["points"], [[0, 1], [0, 3], [1, 2], [0, 2], [2, 3]]
     )
     assert numpy.array_equal(mesh.cells["points"], [[0, 1, 2], [0, 2, 3]])
-    assert numpy.array_equal(mesh.cells["edges"], [[2, 3, 0], [4, 1, 3]])
+    assert numpy.array_equal(mesh.cells["facets"], [[2, 3, 0], [4, 1, 3]])
 
 
 def test_flip_simple_negative_orientation():
@@ -68,9 +68,9 @@ def test_flip_simple_negative_orientation():
     mesh.create_edges()
     assert mesh.num_delaunay_violations() == 1
     assert numpy.array_equal(
-        mesh.edges["points"], [[0, 1], [0, 3], [1, 2], [1, 3], [2, 3]]
+        mesh.facets["points"], [[0, 1], [0, 3], [1, 2], [1, 3], [2, 3]]
     )
-    assert numpy.array_equal(mesh.cells["edges"], [[3, 0, 1], [4, 2, 3]])
+    assert numpy.array_equal(mesh.cells["facets"], [[3, 0, 1], [4, 2, 3]])
     assert_mesh_consistency(mesh)
 
     # mesh.show()
@@ -78,10 +78,10 @@ def test_flip_simple_negative_orientation():
     assert_mesh_consistency(mesh)
     assert mesh.num_delaunay_violations() == 0
     assert numpy.array_equal(
-        mesh.edges["points"], [[0, 1], [0, 3], [1, 2], [0, 2], [2, 3]]
+        mesh.facets["points"], [[0, 1], [0, 3], [1, 2], [0, 2], [2, 3]]
     )
     assert numpy.array_equal(mesh.cells["points"], [[0, 3, 2], [0, 2, 1]])
-    assert numpy.array_equal(mesh.cells["edges"], [[4, 3, 1], [2, 0, 3]])
+    assert numpy.array_equal(mesh.cells["facets"], [[4, 3, 1], [2, 0, 3]])
 
 
 def test_flip_simple_opposite_orientation():
@@ -105,9 +105,9 @@ def test_flip_simple_opposite_orientation():
     mesh.create_edges()
     assert mesh.num_delaunay_violations() == 1
     assert numpy.array_equal(
-        mesh.edges["points"], [[0, 1], [0, 3], [1, 2], [1, 3], [2, 3]]
+        mesh.facets["points"], [[0, 1], [0, 3], [1, 2], [1, 3], [2, 3]]
     )
-    assert numpy.array_equal(mesh.cells["edges"], [[3, 1, 0], [4, 2, 3]])
+    assert numpy.array_equal(mesh.cells["facets"], [[3, 1, 0], [4, 2, 3]])
     assert_mesh_consistency(mesh)
 
     # mesh.show()
@@ -115,10 +115,10 @@ def test_flip_simple_opposite_orientation():
     assert_mesh_consistency(mesh)
     assert mesh.num_delaunay_violations() == 0
     assert numpy.array_equal(
-        mesh.edges["points"], [[0, 1], [0, 3], [1, 2], [0, 2], [2, 3]]
+        mesh.facets["points"], [[0, 1], [0, 3], [1, 2], [0, 2], [2, 3]]
     )
     assert numpy.array_equal(mesh.cells["points"], [[0, 1, 2], [0, 2, 3]])
-    assert numpy.array_equal(mesh.cells["edges"], [[2, 3, 0], [4, 1, 3]])
+    assert numpy.array_equal(mesh.cells["facets"], [[2, 3, 0], [4, 1, 3]])
 
 
 def test_flip_delaunay_near_boundary():
@@ -129,14 +129,14 @@ def test_flip_delaunay_near_boundary():
     mesh.create_edges()
     assert mesh.num_delaunay_violations() == 1
     assert numpy.array_equal(mesh.cells["points"], [[0, 1, 2], [0, 2, 3]])
-    assert numpy.array_equal(mesh.cells["edges"], [[3, 1, 0], [4, 2, 1]])
+    assert numpy.array_equal(mesh.cells["facets"], [[3, 1, 0], [4, 2, 1]])
 
     mesh.flip_until_delaunay()
 
     assert_mesh_consistency(mesh)
     assert mesh.num_delaunay_violations() == 0
     assert numpy.array_equal(mesh.cells["points"], [[1, 2, 3], [1, 3, 0]])
-    assert numpy.array_equal(mesh.cells["edges"], [[4, 1, 3], [2, 0, 1]])
+    assert numpy.array_equal(mesh.cells["facets"], [[4, 1, 3], [2, 0, 1]])
 
 
 def test_flip_same_edge_twice():

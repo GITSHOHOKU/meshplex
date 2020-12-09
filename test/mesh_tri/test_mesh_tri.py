@@ -87,7 +87,7 @@ def test_unit_triangle(cells_dtype):
     assert mesh.genus == 0.5
 
     mesh.get_cell_mask()
-    mesh.get_edge_mask()
+    mesh.get_facet_mask()
     mesh.get_vertex_mask()
 
     # dummy subdomain marker test
@@ -133,8 +133,8 @@ def test_regular_tri_additional_points():
     assert numpy.array_equal(mesh.cells["points"], [[1, 2, 3]])
 
     mesh.create_edges()
-    assert numpy.array_equal(mesh.cells["edges"], [[2, 1, 0]])
-    assert numpy.array_equal(mesh.edges["points"], [[1, 2], [1, 3], [2, 3]])
+    assert numpy.array_equal(mesh.cells["facets"], [[2, 1, 0]])
+    assert numpy.array_equal(mesh.facets["points"], [[1, 2], [1, 3], [2, 3]])
 
     # ce_ratios
     assert near_equal(mesh.ce_ratios.T, [0.0, 0.5, 0.5], tol)
